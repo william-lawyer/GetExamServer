@@ -1,51 +1,63 @@
-async function sendVerificationCode(email) {
-    try {
-        const response = await fetch('https://getexamserver.onrender.com', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
-        });
+const express = require('express');
+const nodemailer = require('nodemailer');
+const cors = require('cors');
+const app = express();
+const port = process.env.PORT || 3000; // Используем порт из окружения или 3000 по умолчанию
 
-        if (response.ok) {
-            showScreen(codeScreen);
-            inputs.regCode.value = '';
-            errors.regCode.textContent = '';
-        } else {
-            errors.regEmail.textContent = 'Ошибка при отправке кода';
-            showScreen(registerScreen);
-        }
-    } catch (error) {
-        errors.regEmail.textContent = 'Ошибка сети';
-        showScreen(registerScreen);
-        console.error(error);
+// Middleware
+app.use(express.json());
+app.use(cors()); // Разрешаем CORS для всех источников
+
+// Настройка Nodemailer для отправки email через Gmail
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'majesticonlinedocuments@gmail.com', // Ваш email
+        pass: 'lzrz bttw xxuc tfpa' // Ваш пароль приложения Gmail
     }
-}
+});
 
-async function verifyCode() {
-    const code = inputs.regCode.value.trim();
-    const email = regData.email;
+// Объект для хранения кодов подтверждения
+const verificationCodes = {};
 
-    if (!validateCode(inputs.regCode, errors.regCode)) return;
+// Эндпоинт для отправки email с кодом
+app.post('/send-email', (req, res) => {
+    const { email } = req.body;
 
-    try {
-        const response = await fetch('https://getexamserver.onrender.com', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, code })
-        });
+    // Генерация случайного 4-значного кода
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    verificationCodes[email] = code;
 
-        if (response.ok) {
-            localStorage.setItem('name', regData.name);
-            localStorage.setItem('username', regData.username);
-            localStorage.setItem('email', regData.email);
-            localStorage.setItem('password', regData.password);
-            localStorage.setItem('loggedIn', 'true');
-            startApp();
-        } else {
-            errors.regCode.textContent = 'Неверный код';
+    const mailOptions = {
+        from: 'majesticonlinedocuments@gmail.com',
+        to: email,
+        subject: 'Код подтверждения',
+        text: `Ваш код подтверждения: ${code}`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Ошибка отправки:', error);
+            return res.status(500).json({ error: 'Не удалось отправить код' });
         }
-    } catch (error) {
-        errors.regCode.textContent = 'Ошибка сети';
-        console.error(error);
+        console.log('Письмо отправлено:', info.response);
+        res.status(200).json({ message: 'Код отправлен' });
+    });
+});
+
+// Эндпоинт для проверки кода
+app.post('/verify-code', (req, res) => {
+    const { email, code } = req.body;
+
+    if (verificationCodes[email] && verificationCodes[email] === code) {
+        delete verificationCodes[email]; // Удаляем код после успешной проверки
+        res.status(200).json({ message: 'Код верный' });
+    } else {
+        res.status(400).json({ error: 'Неверный код' });
     }
-}
+});
+
+// Запуск сервера
+app.listen(port, () => {
+    console.log(`Сервер запущен на порту ${port}`);
+});
