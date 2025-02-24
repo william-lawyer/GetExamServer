@@ -28,7 +28,7 @@ async function verifyCode() {
     if (!validateCode(inputs.regCode, errors.regCode)) return;
 
     try {
-        const response = await fetch('https://learning-app-server.onrender.com/verify-code', {
+        const response = await fetch('https://getexamserver.onrender.com', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, code })
