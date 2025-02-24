@@ -1,6 +1,6 @@
 async function sendVerificationCode(email) {
     try {
-        const response = await fetch('https://learning-app-server.onrender.com/send-email', {
+        const response = await fetch('https://getexamserver.onrender.com', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
