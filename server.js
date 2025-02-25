@@ -12,8 +12,8 @@ app.use(cors()); // Разрешаем CORS для всех источников
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'majesticonlinedocuments@gmail.com', // Ваш email
-        pass: 'lzrz bttw xxuc tfpa' // Ваш пароль приложения Gmail
+        user: 'getexam.verif@gmail.com', // Ваш email
+        pass: 'ynmt ldfy tgwc gsyw' // Ваш пароль приложения Gmail
     }
 });
 
